@@ -1,0 +1,68 @@
+import RPi.GPIO as GPIO
+from time import sleep
+from flask import Flask, render_template
+app = Flask(__name__)
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+
+LIGHT = 3
+BLINK = 4
+
+LIGHTSts= 0
+BLINKSts =0
+
+GPIO.setup(LIGHT, GPIO.OUT)
+GPIO.setup(LIGHT,GPIO.LOW)
+GPIO.setup(BLINK,GPIO.OUT)
+GPIO.setup(BLINK,GPIO.LOW)
+
+
+@app.route("/")
+def index():
+    LIGHTSts = GPIO.input(LIGHT)
+    BLINKSts = GPIO.input(BLINK)
+   
+    templateData = {
+        
+      'title' : 'SMART HOME',
+      'LIGHT'  : LIGHTSts,
+      'BLINK' : BLINKSts,
+     
+   }
+    return render_template('index.html', **templateData)
+
+
+@app.route("/<deviceName>/<action>")
+def action(deviceName, action):
+    if deviceName == 'LIGHT':
+        actuator = LIGHT
+    if deviceName == 'BLINK':
+        actuator = BLINK
+   	
+    if action == "on":
+        GPIO.output(actuator, GPIO.HIGH)
+    if action == "off":
+        GPIO.output(actuator, GPIO.LOW)
+    if action == "BLINK":
+        for i in range(6):
+            GPIO.output(actuator, GPIO.HIGH)
+            sleep(1)
+            GPIO.output(actuator, GPIO.LOW)
+            sleep(1)
+      
+ 
+
+           
+
+    LIGHTSts = GPIO.input(LIGHT)
+    BLINKSts = GPIO.input(BLINK)
+    
+    templateData = {
+        'LIGHT'  : LIGHTSts,
+        'BLINK'  : BLINKSts,
+       
+   }
+    return render_template('index.html', **templateData)
+if __name__ == "__main__":
+   app.run(host='192.168.0.105', port=80, debug=True)
